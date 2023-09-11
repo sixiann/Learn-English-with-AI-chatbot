@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <h2>Upload Audio File</h2>
+        <form action="/transcribe_audio" method="POST" enctype="multipart/form-data">
+            <input type="file" name="audio_file" accept=".mp3, .wav">
+            <br>
+            <button type="submit">Transcribe Audio</button>
+        </form>
+        <!-- Container for displaying transcription result -->
+        <div id="transcription-result"></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(function() {
+        $("form").submit(function(e) {
+            e.preventDefault(); // Prevent form submission
+
+            // Show a loading message while waiting for transcription
+            $("#transcription-result").html("Transcribing audio... Please wait.");
+
+            // Serialize the form data
+            var formData = new FormData(this);
+
+            // Make an AJAX request to transcribe_audio route
+            $.ajax({
+                type: "POST",
+                url: "/transcribe_audio",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    // Check for errors
+                    if (data.error) {
+                        $("#transcription-result").html("Error: " + data.error);
+                    } else {
+                        // Convert the JSON object to a string and display the transcription result
+                        $("#transcription-result").html("Transcription: " + JSON.stringify(data.text));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $("#transcription-result").html("Error: " + error);
+                }
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}
