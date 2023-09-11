@@ -15,9 +15,28 @@
 
     <div class="col-md-4">
         <h2>Feedback for speech</h2>
+
+        <!-- grammar -->
         <button id="generate-response-btn1" type="button">Grammar</button>
         <br>
-        <div id="gpt-response"></div>
+        <!-- <div id="grammar-response"></div> -->
+
+        <!-- vocab -->
+        <button id="generate-response-btn2" type="button">Vocabulary</button>
+        <br>
+
+        <div id="grammar-response"></div>
+    </div>
+
+    <div class="col-md-4">
+        <h2>Continue conversation</h2>
+
+        <!-- grammar -->
+        <button id="generate-response-btn3" type="button">Grammar</button>
+        <br>
+
+        <div id="chat-response"></div>
+
     </div>
 
 </div>
@@ -61,30 +80,40 @@
 
         // Handle Generate Response button click
         $("#generate-response-btn1").click(function() {
-            
-            // Get the transcription text from the transcription result container
-            var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+        // Get the transcription text from the transcription result container
+        var transcription = $("#transcription-result").text().replace("Transcription: ", "");
 
-            // Show the loading message
-            $("#gpt-response").html("Loading... Please wait.");
+        // Show the loading message
+        $("#grammar-response").html("Loading... Please wait.");
 
-            generateResponse(transcription);
-        });
+        generateResponse(transcription, "grammar");
+    });
+
+    $("#generate-response-btn2").click(function() {
+        // Get the transcription text from the transcription result container
+        var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+
+        // Show the loading message
+        $("#grammar-response").html("Loading... Please wait.");
+
+        generateResponse(transcription, "vocab");
+    });
+
 
         // Function to generate GPT-3.5 response
-        function generateResponse(transcription) {
+        function generateResponse(transcription, feedbackType) {
             // Make an AJAX request to send the transcription to the server
             $.ajax({
                 type: "POST",
                 url: "/generate_response",
-                data: JSON.stringify({ transcription: transcription }),
+                data: JSON.stringify({ transcription: transcription, feedback_type: feedbackType }),
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {
                     // Display the GPT-3.5 response
-                    $("#gpt-response").html("GPT-3.5 Response: " + data.response);
+                    $("#grammar-response").html(data.response);
                 },
                 error: function(xhr, status, error) {
-                    $("#gpt-response").html("Error: " + error);
+                    $("#grammar-response").html("Error: " + error);
                 }
             });
         }

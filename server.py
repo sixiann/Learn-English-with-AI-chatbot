@@ -60,11 +60,17 @@ def generate_response():
     try:
         data = request.get_json()
         transcription = data.get('transcription', '')
+        feedback_type = data.get('feedback_type', '')  
 
         # Use GPT-3.5 to generate a response based on the transcription
-        prompt = "Tell me if this speech is grammatical: " + transcription + ". Format the response as \
-            This speech is grammatical, or this speech is not grammatical. \
-                if it not grammatical, include how to fix the grammar error."
+        if feedback_type == "grammar": 
+            prompt = "Tell me if this speech is grammatical: " + transcription + ". Format the response as \
+                This speech is grammatical, or this speech is not grammatical. \
+                    if it not grammatical, include how to fix the grammar error."
+        elif feedback_type == "vocab":
+            prompt = "Give me feedback about the vocabulary of this speech: " + transcription + ". \
+            Do not mention anything about grammar. " 
+
         response = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=256)["choices"][0]["text"]
         print(response)
         return jsonify({'response': response})
