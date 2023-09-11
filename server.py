@@ -3,12 +3,10 @@ from flask import render_template
 from flask import Response, request, jsonify, send_file
 app = Flask(__name__)
 import tempfile
-import subprocess
 import shutil
 
 
 #for gpt
-import os
 import openai
 
 import secrets2
@@ -31,8 +29,6 @@ def transcribe_audio():
             audio_path = f"{temp_dir}/uploaded_audio.{audio_file.filename.split('.')[-1]}"
             audio_file.save(audio_path)
 
-            # Use Whisper AI or any other speech-to-text service to transcribe the audio
-            # Replace the following code with your Whisper AI integration
             transcription = transcribe_audio_with_whisper(audio_path)
 
             # Clean up the temporary directory
@@ -47,9 +43,6 @@ def transcribe_audio():
 
 
 def transcribe_audio_with_whisper(audio_path):
-    # Implement the Whisper AI integration here to transcribe the audio
-    # Replace this dummy implementation with the actual integration
-    # Example using subprocess to call a hypothetical Whisper AI executable:
     try:
         audio_file = open(audio_path, "rb")
         transcript = openai.Audio.transcribe("whisper-1", audio_file)
@@ -62,9 +55,25 @@ def transcribe_audio_with_whisper(audio_path):
         return "Transcription failed"
 
 
+@app.route('/generate_response', methods=['POST'])
+def generate_response():
+    try:
+        data = request.get_json()
+        transcription = data.get('transcription', '')
+
+        # Use GPT-3.5 to generate a response based on the transcription
+        prompt = "Tell me if this speech is grammatical: " + transcription + ". Format the response as \
+            This speech is grammatical, or this speech is not grammatical. \
+                if it not grammatical, include how to fix the grammar error."
+        response = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=256)["choices"][0]["text"]
+        print(response)
+        return jsonify({'response': response})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+
 @app.route('/')
 def home():
-    # you can pass in an existing article or a blank one.
     return render_template('home.html')   
 
 

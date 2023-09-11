@@ -12,6 +12,14 @@
         <!-- Container for displaying transcription result -->
         <div id="transcription-result"></div>
     </div>
+
+    <div class="col-md-4">
+        <h2>Feedback for speech</h2>
+        <button id="generate-response-btn1" type="button">Grammar</button>
+        <br>
+        <div id="gpt-response"></div>
+    </div>
+
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -38,8 +46,11 @@
                     if (data.error) {
                         $("#transcription-result").html("Error: " + data.error);
                     } else {
-                        // Convert the JSON object to a string and display the transcription result
-                        $("#transcription-result").html("Transcription: " + JSON.stringify(data.text));
+                        // Display the Whisper AI transcription
+                        $("#transcription-result").html("Transcription: " + data.text);
+
+                        // Enable the "Generate Response" button
+                        $("#generate-response-btn1").prop("disabled", false);
                     }
                 },
                 error: function(xhr, status, error) {
@@ -47,6 +58,36 @@
                 }
             });
         });
+
+        // Handle Generate Response button click
+        $("#generate-response-btn1").click(function() {
+            
+            // Get the transcription text from the transcription result container
+            var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+
+            // Show the loading message
+            $("#gpt-response").html("Loading... Please wait.");
+
+            generateResponse(transcription);
+        });
+
+        // Function to generate GPT-3.5 response
+        function generateResponse(transcription) {
+            // Make an AJAX request to send the transcription to the server
+            $.ajax({
+                type: "POST",
+                url: "/generate_response",
+                data: JSON.stringify({ transcription: transcription }),
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    // Display the GPT-3.5 response
+                    $("#gpt-response").html("GPT-3.5 Response: " + data.response);
+                },
+                error: function(xhr, status, error) {
+                    $("#gpt-response").html("Error: " + error);
+                }
+            });
+        }
     });
 </script>
 
