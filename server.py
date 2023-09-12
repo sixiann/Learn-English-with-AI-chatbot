@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import render_template
-from flask import Response, request, jsonify, send_file
+from flask import request, jsonify
 app = Flask(__name__)
 import tempfile
 import shutil
@@ -12,12 +12,6 @@ import openai
 import secrets2
 openai.api_key = secrets2.SECRET_KEY
 
-
-
-#for dalle
-import json
-from base64 import b64decode
-from pathlib import Path
 
 @app.route('/transcribe_audio', methods=['POST'])
 def transcribe_audio():
@@ -62,7 +56,6 @@ def generate_response():
         transcription = data.get('transcription', '')
         feedback_type = data.get('feedback_type', '')  
 
-        # Use GPT-3.5 to generate a response based on the transcription
         if feedback_type == "grammar": 
             prompt = "Tell me if this speech is grammatical: " + transcription + ". Format the response as \
                 This speech is grammatical, or this speech is not grammatical. \
@@ -71,8 +64,13 @@ def generate_response():
             prompt = "Give me feedback about the vocabulary of this speech: " + transcription + ". \
             Do not mention anything about grammar. " 
 
+        else:
+            prompt = transcription + ". Continue this conversation as if you were talking to a friend. \
+                Limit your response to 2 sentences."
+            
         response = openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=256)["choices"][0]["text"]
         print(response)
+        
         return jsonify({'response': response})
     except Exception as e:
         return jsonify({'error': str(e)})

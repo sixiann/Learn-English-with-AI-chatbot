@@ -9,7 +9,7 @@
             <br>
             <button type="submit">Transcribe Audio</button>
         </form>
-        <!-- Container for displaying transcription result -->
+
         <div id="transcription-result"></div>
     </div>
 
@@ -19,7 +19,6 @@
         <!-- grammar -->
         <button id="generate-response-btn1" type="button">Grammar</button>
         <br>
-        <!-- <div id="grammar-response"></div> -->
 
         <!-- vocab -->
         <button id="generate-response-btn2" type="button">Vocabulary</button>
@@ -31,8 +30,8 @@
     <div class="col-md-4">
         <h2>Continue conversation</h2>
 
-        <!-- grammar -->
-        <button id="generate-response-btn3" type="button">Grammar</button>
+        <!-- chat -->
+        <button id="generate-response-btn3" type="button">Chat</button>
         <br>
 
         <div id="chat-response"></div>
@@ -43,8 +42,8 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(function() {
-        $("form").submit(function(e) {
+    $(function () {
+        $("form").submit(function (e) {
             e.preventDefault(); // Prevent form submission
 
             // Show a loading message while waiting for transcription
@@ -60,7 +59,7 @@
                 data: formData,
                 contentType: false,
                 processData: false,
-                success: function(data) {
+                success: function (data) {
                     // Check for errors
                     if (data.error) {
                         $("#transcription-result").html("Error: " + data.error);
@@ -68,36 +67,48 @@
                         // Display the Whisper AI transcription
                         $("#transcription-result").html("Transcription: " + data.text);
 
-                        // Enable the "Generate Response" button
+                        // Enable subsequent buttons
                         $("#generate-response-btn1").prop("disabled", false);
+                        $("#generate-response-btn2").prop("disabled", false);
+                        $("#generate-response-btn3").prop("disabled", false);
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     $("#transcription-result").html("Error: " + error);
                 }
             });
         });
 
         // Handle Generate Response button click
-        $("#generate-response-btn1").click(function() {
-        // Get the transcription text from the transcription result container
-        var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+        $("#generate-response-btn1").click(function () {
+            // Get the transcription text from the transcription result container
+            var transcription = $("#transcription-result").text().replace("Transcription: ", "");
 
-        // Show the loading message
-        $("#grammar-response").html("Loading... Please wait.");
+            // Show the loading message
+            $("#grammar-response").html("Loading... Please wait.");
 
-        generateResponse(transcription, "grammar");
-    });
+            generateResponse(transcription, "grammar");
+        });
 
-    $("#generate-response-btn2").click(function() {
-        // Get the transcription text from the transcription result container
-        var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+        $("#generate-response-btn2").click(function () {
+            // Get the transcription text from the transcription result container
+            var transcription = $("#transcription-result").text().replace("Transcription: ", "");
 
-        // Show the loading message
-        $("#grammar-response").html("Loading... Please wait.");
+            // Show the loading message
+            $("#grammar-response").html("Loading... Please wait.");
 
-        generateResponse(transcription, "vocab");
-    });
+            generateResponse(transcription, "vocab");
+        });
+
+        $("#generate-response-btn3").click(function () {
+            // Get the transcription text from the transcription result container
+            var transcription = $("#transcription-result").text().replace("Transcription: ", "");
+
+            // Show the loading message
+            $("#chat-response").html("Loading... Please wait.");
+
+            generateResponse(transcription, "chat");
+        });
 
 
         // Function to generate GPT-3.5 response
@@ -108,15 +119,24 @@
                 url: "/generate_response",
                 data: JSON.stringify({ transcription: transcription, feedback_type: feedbackType }),
                 contentType: "application/json; charset=utf-8",
-                success: function(data) {
-                    // Display the GPT-3.5 response
-                    $("#grammar-response").html(data.response);
+                success: function (data) {
+                    if (feedbackType == "chat"){
+                        $("#chat-response").html(data.response);
+                    } else{
+                        $("#grammar-response").html(data.response);
+                    }
                 },
-                error: function(xhr, status, error) {
-                    $("#grammar-response").html("Error: " + error);
+                error: function (xhr, status, error) {
+                    if (feedbackType == "chat"){
+                        $("#chat-response").html("Error: " + error);
+                    } else {
+                        $("#grammar-response").html("Error: " + error);
+                    }
                 }
             });
         }
+
+
     });
 </script>
 
